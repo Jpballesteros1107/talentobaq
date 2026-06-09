@@ -30,6 +30,8 @@ export default function InstitutionSettingsPage() {
     phone: '',
     email: '',
     website: '',
+    latitude: '',
+    longitude: '',
   });
 
   useEffect(() => {
@@ -60,6 +62,8 @@ export default function InstitutionSettingsPage() {
           phone: inst.phone || '',
           email: inst.email || '',
           website: inst.website || '',
+          latitude: inst.latitude ? String(inst.latitude) : '',
+          longitude: inst.longitude ? String(inst.longitude) : '',
         });
         setSelectedCats(inst.institution_categories?.map((ic: any) => ic.category_id) ?? []);
       }
@@ -81,7 +85,12 @@ export default function InstitutionSettingsPage() {
     if (institution) {
       const { error } = await supabase
         .from('institutions')
-        .update({ ...form, updated_at: new Date().toISOString() })
+        .update({
+          ...form,
+          latitude: form.latitude ? parseFloat(form.latitude) : null,
+          longitude: form.longitude ? parseFloat(form.longitude) : null,
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', institution.id);
       if (error) { toast.error('Error al guardar'); setSaving(false); return; }
 
@@ -95,7 +104,12 @@ export default function InstitutionSettingsPage() {
     } else {
       const { data: newInst, error } = await supabase
         .from('institutions')
-        .insert({ ...form, user_id: user!.id })
+        .insert({
+          ...form,
+          latitude: form.latitude ? parseFloat(form.latitude) : null,
+          longitude: form.longitude ? parseFloat(form.longitude) : null,
+          user_id: user!.id,
+        })
         .select()
         .single();
       if (error) { toast.error('Error al crear la institución'); setSaving(false); return; }
@@ -233,6 +247,19 @@ export default function InstitutionSettingsPage() {
                 <Input id="website" type="url" placeholder="https://miclub.com" value={form.website} onChange={(e) => update('website', e.target.value)} />
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="latitude">Latitud</Label>
+                <Input id="latitude" type="number" step="any" placeholder="10.9685" value={form.latitude} onChange={(e) => update('latitude', e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="longitude">Longitud</Label>
+                <Input id="longitude" type="number" step="any" placeholder="-74.7813" value={form.longitude} onChange={(e) => update('longitude', e.target.value)} />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Ingresa las coordenadas para mostrar tu ubicación en el mapa. Encuéntralas en Google Maps (click derecho en tu ubicación).
+            </p>
           </div>
 
           <Button type="submit" className="w-full bg-primary hover:bg-primary/90 font-semibold h-11" disabled={saving}>
