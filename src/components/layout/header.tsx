@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Zap, ChevronDown, LogOut, LayoutDashboard, Shield } from 'lucide-react';
+import { Menu, X, Zap, ChevronDown, LogOut, LayoutDashboard, Shield, User, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,9 +15,13 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
+import ThemeToggle from '@/components/theme-toggle';
 
 const navLinks = [
   { href: '/explore', label: 'Explorar' },
+  { href: '/events', label: 'Eventos' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/compare', label: 'Comparar' },
 ];
 
 export default function Header() {
@@ -32,7 +36,6 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-bold text-xl group">
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary group-hover:scale-110 transition-transform">
             <Zap className="w-4 h-4 text-primary-foreground" />
@@ -40,63 +43,63 @@ export default function Header() {
           <span className="text-gradient font-extrabold tracking-tight">TalentoBAQ</span>
         </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-5">
           {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                'text-sm font-medium transition-colors hover:text-primary',
-                pathname === link.href ? 'text-primary' : 'text-muted-foreground'
-              )}
-            >
+            <Link key={link.href} href={link.href}
+              className={cn('text-sm font-medium transition-colors hover:text-primary', pathname === link.href ? 'text-primary' : 'text-muted-foreground')}>
               {link.label}
             </Link>
           ))}
         </nav>
 
-        {/* Desktop Actions */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2">
+          <ThemeToggle />
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 h-9">
                   <Avatar className="w-7 h-7">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
-                      {initials}
-                    </AvatarFallback>
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">{initials}</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium max-w-[120px] truncate">
-                    {profile?.full_name || user.email}
-                  </span>
+                  <span className="text-sm font-medium max-w-[120px] truncate">{profile?.full_name || user.email}</span>
                   <ChevronDown className="w-3 h-3 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="flex items-center gap-2">
+                    <User className="w-4 h-4" /> Mi perfil
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/profile?tab=favorites" className="flex items-center gap-2">
+                    <Heart className="w-4 h-4" /> Favoritos
+                  </Link>
+                </DropdownMenuItem>
                 {profile?.role === 'institution' && (
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard" className="flex items-center gap-2">
-                      <LayoutDashboard className="w-4 h-4" />
-                      Dashboard
+                      <LayoutDashboard className="w-4 h-4" /> Dashboard
                     </Link>
                   </DropdownMenuItem>
                 )}
                 {profile?.role === 'admin' && (
-                  <DropdownMenuItem asChild>
-                    <Link href="/admin" className="flex items-center gap-2">
-                      <Shield className="w-4 h-4" />
-                      Administración
-                    </Link>
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" className="flex items-center gap-2">
+                        <Shield className="w-4 h-4" /> Administración
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin/blog" className="flex items-center gap-2">
+                        <LayoutDashboard className="w-4 h-4" /> Blog Admin
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive cursor-pointer"
-                  onClick={signOut}
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Cerrar sesión
+                <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer" onClick={signOut}>
+                  <LogOut className="w-4 h-4 mr-2" /> Cerrar sesión
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -112,59 +115,48 @@ export default function Header() {
           )}
         </div>
 
-        {/* Mobile toggle */}
-        <button
-          className="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground transition-colors"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
+          <button className="p-2 rounded-md text-muted-foreground hover:text-foreground transition-colors" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-background px-4 py-4 flex flex-col gap-3">
           {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                'text-sm font-medium py-2 transition-colors hover:text-primary',
-                pathname === link.href ? 'text-primary' : 'text-muted-foreground'
-              )}
-            >
+            <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)}
+              className={cn('text-sm font-medium py-2 transition-colors hover:text-primary', pathname === link.href ? 'text-primary' : 'text-muted-foreground')}>
               {link.label}
             </Link>
           ))}
           <div className="flex flex-col gap-2 pt-2 border-t border-border">
             {user ? (
               <>
+                <Link href="/profile" onClick={() => setMobileOpen(false)}>
+                  <Button variant="outline" size="sm" className="w-full justify-start gap-2"><User className="w-4 h-4" /> Mi perfil</Button>
+                </Link>
+                <Link href="/profile?tab=favorites" onClick={() => setMobileOpen(false)}>
+                  <Button variant="outline" size="sm" className="w-full justify-start gap-2"><Heart className="w-4 h-4" /> Favoritos</Button>
+                </Link>
                 {profile?.role === 'institution' && (
                   <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
-                    <Button variant="outline" size="sm" className="w-full justify-start gap-2">
-                      <LayoutDashboard className="w-4 h-4" />
-                      Dashboard
-                    </Button>
+                    <Button variant="outline" size="sm" className="w-full justify-start gap-2"><LayoutDashboard className="w-4 h-4" /> Dashboard</Button>
                   </Link>
                 )}
                 {profile?.role === 'admin' && (
-                  <Link href="/admin" onClick={() => setMobileOpen(false)}>
-                    <Button variant="outline" size="sm" className="w-full justify-start gap-2">
-                      <Shield className="w-4 h-4" />
-                      Administración
-                    </Button>
-                  </Link>
+                  <>
+                    <Link href="/admin" onClick={() => setMobileOpen(false)}>
+                      <Button variant="outline" size="sm" className="w-full justify-start gap-2"><Shield className="w-4 h-4" /> Administración</Button>
+                    </Link>
+                    <Link href="/admin/blog" onClick={() => setMobileOpen(false)}>
+                      <Button variant="outline" size="sm" className="w-full justify-start gap-2"><LayoutDashboard className="w-4 h-4" /> Blog Admin</Button>
+                    </Link>
+                  </>
                 )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start gap-2 text-destructive hover:text-destructive"
-                  onClick={() => { signOut(); setMobileOpen(false); }}
-                >
-                  <LogOut className="w-4 h-4" />
-                  Cerrar sesión
+                <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-destructive hover:text-destructive" onClick={() => { signOut(); setMobileOpen(false); }}>
+                  <LogOut className="w-4 h-4" /> Cerrar sesión
                 </Button>
               </>
             ) : (
@@ -174,6 +166,9 @@ export default function Header() {
                 </Button>
                 <Button size="sm" asChild className="w-full bg-primary hover:bg-primary/90">
                   <Link href="/auth/register" onClick={() => setMobileOpen(false)}>Registrar institución</Link>
+                </Button>
+                <Button variant="outline" size="sm" asChild className="w-full">
+                  <Link href="/auth/family-register" onClick={() => setMobileOpen(false)}>Registro familia</Link>
                 </Button>
               </>
             )}
